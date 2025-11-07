@@ -4,8 +4,8 @@ import Product from '../models/Product';
 import { IProduct } from '../types';
 import { useCart } from '../context/CartContext';
 import Link from 'next/link';
-import { IProductDocument } from '../models/Product'; // Untuk typing
-import { useSession, signOut } from 'next-auth/react'; // Untuk info user
+// Hapus import IProductDocument, kita tidak membutuhkannya di sini
+import { useSession, signOut } from 'next-auth/react'; 
 
 // Tipe untuk props halaman
 type HomePageProps = {
@@ -56,7 +56,7 @@ const HomePage: NextPage<HomePageProps> = ({ products }) => {
               style={{ border: '1px solid #ccc', padding: '1rem', width: '250px' }}
             >
               {/* Ganti 'product.image' dengan URL gambar jika ada */}
-              {/* <img src={product.image} alt={product.name} width={200} height={200} /> */}
+              <img src={product.image} alt={product.name} width={200} height={200} style={{ objectFit: 'cover' }} />
               <h3>{product.name}</h3>
               <p>{product.description}</p>
               <p>Stok: {product.stock}</p>
@@ -77,29 +77,21 @@ const HomePage: NextPage<HomePageProps> = ({ products }) => {
 
 export default HomePage;
 
-// Ambil data produk dari server
+// --- BLOK INI DIPERBAIKI ---
 export const getServerSideProps: GetServerSideProps = async () => {
-  await dbConnect(); //
-  const products = await Product.find({}).lean() as IProductDocument[]; //
+  await dbConnect(); 
+  
+  // 1. Ambil data. JANGAN gunakan 'as IProductDocument[]'
+  const products = await Product.find({}).lean(); 
 
-  // Serialisasi data agar aman dikirim dari server ke client
-  // ObjectId tidak bisa langsung di-pass sebagai props
-  const serializedProducts = products.map(product => ({
-    ...product,
-    _id: product._id.toString(),
-    // Pastikan semua ObjectId di-serialize, termasuk di dalam array
-    reviews: product.reviews.map(r => ({
-      ...r,
-      _id: r._id?.toString(),
-      user: r.user.toString(),
-    })),
-    createdAt: product.createdAt?.toString() || null,
-    updatedAt: product.updatedAt?.toString() || null,
-  }));
+  // 2. Gunakan JSON.parse(JSON.stringify(...))
+  // Ini adalah cara paling aman untuk men-serialisasi data Mongoose
+  // (mengubah ObjectId, Date, dll. menjadi string)
+  const serializedProducts = JSON.parse(JSON.stringify(products));
   
   return {
     props: {
-      products: JSON.parse(JSON.stringify(serializedProducts)), // Trik aman untuk serialisasi
+      products: serializedProducts, // Kirim data yang sudah aman
     },
   };
 };
