@@ -1,9 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getSession } from 'next-auth/react';
-import dbConnect from '../../../lib/dbConnect';
-import Order from '../../../models/Order';
+import dbConnect from '@/lib/dbConnect'; // <-- PERBAIKAN
+import Order from '@/models/Order'; // <-- PERBAIKAN
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+// ... (existing code) ...
   const session = await getSession({ req });
   if (!session) return res.status(401).json({ message: 'Unauthorized' });
 

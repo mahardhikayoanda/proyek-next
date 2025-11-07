@@ -1,8 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getSession } from 'next-auth/react';
-import dbConnect from '../../../lib/dbConnect';
-import Order from '../../../models/Order';
-import { IOrder } from '../../../types';
+import dbConnect from '@/lib/dbConnect'; // <-- PERBAIKAN
+import Product from '@/models/Product'; // <-- PERBAIKAN
+import { put } from '@vercel/blob';
+// ... (existing code) ...
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const session = await getSession({ req });

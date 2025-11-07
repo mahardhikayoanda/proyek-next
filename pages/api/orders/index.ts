@@ -1,10 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getSession } from 'next-auth/react';
-import dbConnect from '../../../lib/dbConnect';
-import Order from '../../../models/Order';
-import { IOrder } from '../../../types';
+import dbConnect from '@/lib/dbConnect'; // <-- PERBAIKAN
+import Order from '@/models/Order'; // <-- PERBAIKAN
+import { IOrder } from '@/types'; // <-- PERBAIKAN
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+// ... (existing code) ...
   if (req.method === 'POST') {
     const session = await getSession({ req });
     if (!session) {

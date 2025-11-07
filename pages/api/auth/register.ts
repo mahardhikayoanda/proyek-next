@@ -1,9 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import bcryptjs from 'bcryptjs';
-import dbConnect from '../../../lib/dbConnect';
-import User from '../../../models/User';
+import dbConnect from '@/lib/dbConnect'; // <-- PERBAIKAN
+import User from '@/models/User'; // <-- PERBAIKAN
 
 type Data = { message: string };
+// ... (existing code) ...
 
 export default async function handler(
   req: NextApiRequest,

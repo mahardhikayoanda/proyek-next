@@ -1,7 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getSession } from 'next-auth/react';
-import dbConnect from '../../../lib/dbConnect';
-import Product from '../../../models/Product';
+import dbConnect from '@/lib/dbConnect'; // <-- PERBAIKAN
+import Product from '@/models/Product'; // <-- PERBAIKAN
+import { put, del } from '@vercel/blob';
+// ... (existing code) ...
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   await dbConnect();

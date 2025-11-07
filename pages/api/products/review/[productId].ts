@@ -1,11 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getSession } from 'next-auth/react';
-import mongoose from 'mongoose'; // Impor mongoose untuk Types.ObjectId
-import dbConnect from '../../../lib/dbConnect';
-import Product from '../../../models/Product';
-import { IReview } from '../../../types';
+import mongoose from 'mongoose'; 
+import dbConnect from '@/lib/dbConnect'; // <-- PERBAIKAN
+import Product from '@/models/Product'; // <-- PERBAIKAN
+import { IReview } from '@/types'; // <-- PERBAIKAN
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+// ... (existing code) ...
   const session = await getSession({ req });
   if (!session) return res.status(401).json({ message: 'Unauthorized' });
 
