@@ -8,6 +8,7 @@ if (!MONGODB_URI) {
   );
 }
 
+// Gunakan global agar koneksi bisa di-cache (Next.js hot reload friendly)
 let cached = (global as any).mongoose;
 
 if (!cached) {
@@ -24,10 +25,10 @@ async function dbConnect() {
       bufferCommands: false,
     };
 
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
-      return mongoose;
-    });
+    const uri: string = MONGODB_URI!; // pastikan bertipe string
+    cached.promise = mongoose.connect(uri, opts).then((mongoose) => mongoose);
   }
+
   cached.conn = await cached.promise;
   return cached.conn;
 }
