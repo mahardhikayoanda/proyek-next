@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document, Model } from 'mongoose';
+import mongoose, { Schema, Document, Model, Types } from 'mongoose'; // <-- PERBAIKAN DI SINI
 import { IUser } from '../types'; // Impor tipe
 
 // Buat interface untuk Dokumen Mongoose
