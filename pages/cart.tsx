@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 
 const CartPage: NextPage = () => {
-  const { cartItems, removeFromCart, addToCart, totalPrice, totalItems } = useCart();
+  // 1. GANTI 'addToCart' dengan 'updateCartQuantity'
+  const { cartItems, removeFromCart, updateCartQuantity, totalPrice, totalItems } = useCart();
   const { data: session } = useSession(); // Untuk cek login
 
   return (
@@ -27,9 +28,10 @@ const CartPage: NextPage = () => {
                 </div>
                 <div>
                   <p>Jumlah:</p>
-                  <button onClick={() => addToCart(item, -1)} disabled={item.qty === 1}>-</button>
+                  {/* 2. GANTI FUNGSI 'onClick' */}
+                  <button onClick={() => updateCartQuantity(item.product, item.qty - 1)} disabled={item.qty === 1}>-</button>
                   <span style={{ margin: '0 10px' }}>{item.qty}</span>
-                  <button onClick={() => addToCart(item, 1)} disabled={item.qty >= item.stock}>+</button>
+                  <button onClick={() => updateCartQuantity(item.product, item.qty + 1)} disabled={item.qty >= item.stock}>+</button>
                 </div>
                 <button onClick={() => removeFromCart(item.product)}>Hapus</button>
               </div>
