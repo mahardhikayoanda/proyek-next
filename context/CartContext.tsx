@@ -16,6 +16,7 @@ interface ICartContext {
   cartItems: CartItem[];
   addToCart: (product: IProduct, qty: number) => void;
   removeFromCart: (id: string) => void;
+  updateCartQuantity: (productId: string, newQty: number) => void; // <-- 1. TAMBAHKAN FUNGSI BARU
   clearCart: () => void;
   totalPrice: number;
   totalItems: number;
@@ -45,7 +46,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (!product._id || !product.slug) return; // Pastikan produk valid
     const productId = product._id.toString();
     const existItem = cartItems.find(x => x.product === productId);
-
+    
     let newCartItems;
 
     if (existItem) {
@@ -71,6 +72,30 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setCartItems(newCartItems);
   };
 
+  // --- 2. IMPLEMENTASI FUNGSI BARU ---
+  const updateCartQuantity = (productId: string, newQty: number) => {
+    const item = cartItems.find(x => x.product === productId);
+    if (!item) return;
+
+    // Pastikan qty tidak melebihi stok atau kurang dari 1
+    let finalQty = newQty;
+    if (finalQty > item.stock) {
+      finalQty = item.stock;
+    }
+    
+    // Jika qty baru kurang dari 1, hapus item (opsional, tapi bagus)
+    if (finalQty < 1) {
+      removeFromCart(productId);
+      return;
+    }
+
+    const newCartItems = cartItems.map(x =>
+      x.product === productId ? { ...x, qty: finalQty } : x
+    );
+    setCartItems(newCartItems);
+  };
+  // ---------------------------------
+
   const removeFromCart = (id: string) => { // id di sini adalah product ID
     setCartItems(cartItems.filter(x => x.product !== id));
   };
@@ -86,7 +111,15 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const totalItems = cartItems.reduce((acc, item) => acc + item.qty, 0);
 
   return (
-    <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, clearCart, totalPrice, totalItems }}>
+    <CartContext.Provider value={{ 
+      cartItems, 
+      addToCart, 
+      removeFromCart, 
+      updateCartQuantity, // <-- 3. EXPOSE FUNGSI BARU
+      clearCart, 
+      totalPrice, 
+      totalItems 
+    }}>
       {children}
     </CartContext.Provider>
   );
