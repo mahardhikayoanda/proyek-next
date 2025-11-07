@@ -2,7 +2,7 @@ import type { GetServerSideProps, NextPage } from 'next';
 import { getSession } from 'next-auth/react';
 import useSWR, { mutate } from 'swr';
 import { IOrder, IReview } from '../../types';
-import Link from 'next/link';
+import Link from 'next/link'; // <-- PERBAIKAN: Link di-import
 import React, { useState } from 'react';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -17,6 +17,7 @@ const CustomerOrdersPage: NextPage = () => {
 
   // Handle "Pesanan Sudah Sampai"
   const handleDeliver = async (orderId: string) => {
+    if (!orderId) return;
     const res = await fetch(`/api/orders/deliver/${orderId}`, {
       method: 'PUT',
     });
@@ -31,6 +32,7 @@ const CustomerOrdersPage: NextPage = () => {
   // Handle Submit Ulasan
   const handleSubmitReview = async (e: React.FormEvent, productId: string) => {
     e.preventDefault();
+    if (!productId) return;
     const res = await fetch(`/api/products/review/${productId}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -60,7 +62,7 @@ const CustomerOrdersPage: NextPage = () => {
           {orders.map((order) => (
             <div key={order._id?.toString()} style={{ border: '1px solid #ccc', padding: '15px' }}>
               <h3>Pesanan: {order._id?.toString()}</h3>
-              <p>Tanggal: {new Date(order.createdAt!).toLocaleString()}</p>
+              <p>Tanggal: {order.createdAt ? new Date(order.createdAt).toLocaleString() : 'N/A'}</p>
               <p>Total: Rp {order.totalPrice}</p>
               <p>Status: <strong>{order.status}</strong></p>
               

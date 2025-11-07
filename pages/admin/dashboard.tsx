@@ -1,8 +1,28 @@
 import type { GetServerSideProps, NextPage } from 'next';
 import { getSession } from 'next-auth/react';
+import Link from 'next/link'; // <-- PERBAIKAN: Link di-import
 
 const AdminDashboard: NextPage = () => {
-  return <h1>Admin Dashboard (Hanya bisa diakses Admin)</h1>;
+  return (
+    <div style={{ padding: '20px' }}>
+      <h1>Admin Dashboard</h1>
+      <nav>
+        <ul>
+          <li>
+            <Link href="/admin/products">Manajemen Produk</Link>
+          </li>
+          <li>
+            <Link href="/admin/orders">Manajemen Pesanan</Link>
+          </li>
+          {/* --- TAMBAHKAN INI --- */}
+          <li>
+            <Link href="/admin/sales-history">Riwayat Penjualan</Link>
+          </li>
+          {/* ------------------- */}
+        </ul>
+      </nav>
+    </div>
+  );
 };
 export default AdminDashboard;
 

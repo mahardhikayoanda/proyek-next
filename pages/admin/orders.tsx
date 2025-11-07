@@ -2,7 +2,7 @@ import type { GetServerSideProps, NextPage } from 'next';
 import { getSession } from 'next-auth/react';
 import useSWR, { mutate } from 'swr';
 import { IOrder } from '../../types';
-import Link from 'next/link';
+import Link from 'next/link'; // <-- PERBAIKAN: Link di-import
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -11,8 +11,9 @@ const AdminOrdersPage: NextPage = () => {
   const { data: orders, error } = useSWR<IOrder[]>('/api/orders', fetcher);
 
   const handleConfirm = async (orderId: string) => {
+    if (!orderId) return;
     // Panggil API konfirmasi yang sudah Anda buat
-    const res = await fetch(`/api/admin/confirm/${orderId}`, {
+    const res = await fetch(`/api/confirm/${orderId}`, { // Pastikan path API benar
       method: 'PUT',
     });
     
@@ -48,7 +49,7 @@ const AdminOrdersPage: NextPage = () => {
             {orders.map((order) => (
               <tr key={order._id?.toString()} style={{ background: order.status === 'pending' ? '#fff8e1' : 'white' }}>
                 <td>{order._id?.toString()}</td>
-                <td>{new Date(order.createdAt!).toLocaleString()}</td>
+                <td>{order.createdAt ? new Date(order.createdAt).toLocaleString() : 'N/A'}</td>
                 <td>Rp {order.totalPrice}</td>
                 <td>{order.status}</td>
                 <td>
