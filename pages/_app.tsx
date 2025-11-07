@@ -1,7 +1,7 @@
 import { SessionProvider } from 'next-auth/react';
 import type { AppProps } from 'next/app';
-import { CartProvider } from '../context/CartContext'; // Akan kita buat
-import '../styles/globals.css';
+import { CartProvider } from '../context/CartContext';
+import '../styles/globals.css'; // <-- Path ini sekarang akan valid
 
 function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   return (
