@@ -1,62 +1,70 @@
-// pages/api/orders/index.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getSession } from 'next-auth/react';
-import dbConnect from '@/lib/dbConnect';
-import Order from '@/models/Order'; // <-- pastikan file models/Order.ts ada dan export default
-// NOTE: jika file ini berada di folder lain, sesuaikan path importnya
+import dbConnect from '../../../lib/dbConnect';
+import Product from '../../../models/Product';
+import { put } from '@vercel/blob';
+import { formidable } from 'formidable';
+import fs from 'fs';
 
-type Data = { message: string } | any;
+// Nonaktifkan bodyParser bawaan Next.js agar kita bisa mem-parsing FormData
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
-  try {
-    const session = await getSession({ req });
-    if (!session) {
-      return res.status(401).json({ message: 'Unauthorized' });
-    }
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  await dbConnect();
 
-    // cast karena next-auth typings kadang tidak punya properti custom (id, role)
-    const user = (session.user as any) || {};
-    const userId = user.id;
-    const userRole = user.role;
+  // --- GET (Tetap sama) ---
+  if (req.method === 'GET') {
+    const products = await Product.find({});
+    return res.status(200).json(products);
+  }
 
-    await dbConnect();
+  // Cek otentikasi admin untuk POST
+  const session = await getSession({ req });
+  if (!session || session.user.role !== 'admin') {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
 
-    if (req.method === 'POST') {
-      // Buat pesanan baru (customer)
-      const { orderItems, shippingInfo, paymentMethod, totalPrice } = req.body;
+  // --- POST (Berubah total untuk handle FormData) ---
+  if (req.method === 'POST') {
+    try {
+      const form = formidable();
+      
+      const [fields, files] = await form.parse(req);
 
-      if (!orderItems || !Array.isArray(orderItems) || orderItems.length === 0) {
-        return res.status(400).json({ message: 'orderItems is required and must be a non-empty array' });
+      // Ambil file gambar
+      const imageFile = files.image?.[0];
+      if (!imageFile) {
+        return res.status(400).json({ message: 'Gambar produk wajib diisi' });
       }
 
-      const newOrder = new Order({
-        user: userId,
-        orderItems,
-        shippingInfo,
-        paymentMethod,
-        totalPrice,
-        status: 'pending',
+      // 1. Upload file ke Vercel Blob
+      const fileStream = fs.createReadStream(imageFile.filepath);
+      const blob = await put(imageFile.originalFilename!, fileStream, {
+        access: 'public',
       });
+      
+      // 2. Ambil data field
+      const newProductData = {
+        name: fields.name?.[0],
+        slug: fields.slug?.[0],
+        description: fields.description?.[0],
+        price: Number(fields.price?.[0]),
+        stock: Number(fields.stock?.[0]),
+        image: blob.url, // <-- Simpan URL dari Vercel Blob
+      };
 
-      const createdOrder = await newOrder.save();
-      return res.status(201).json(createdOrder);
+      // 3. Simpan ke MongoDB
+      const newProduct = new Product(newProductData);
+      await newProduct.save();
+      
+      return res.status(201).json(newProduct);
+
+    } catch (error: any) {
+      return res.status(500).json({ message: error.message || 'Internal Server Error' });
     }
-
-    if (req.method === 'GET') {
-      // Hanya admin boleh mengambil semua pesanan
-      if (userRole !== 'admin') {
-        return res.status(401).json({ message: 'Admin access only' });
-      }
-
-      const orders = await Order.find({}).sort({ createdAt: -1 });
-      return res.status(200).json(orders);
-    }
-
-    // Method lain tidak diizinkan
-    res.setHeader('Allow', ['POST', 'GET']);
-    return res.status(405).json({ message: 'Method Not Allowed' });
-  } catch (err) {
-    console.error('orders handler error:', err);
-    return res.status(500).json({ message: 'Internal Server Error', ...(err instanceof Error ? { error: err.message } : {}) });
   }
 }

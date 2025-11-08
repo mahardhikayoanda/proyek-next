@@ -3,7 +3,7 @@ import { getSession } from 'next-auth/react';
 import { useState } from 'react';
 import useSWR, { mutate } from 'swr';
 import { IProduct } from '../../types';
-import Link from 'next/link'; // <-- PERBAIKAN: Link di-import
+import Link from 'next/link';
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -24,8 +24,7 @@ const AdminProductsPage: NextPage = () => {
     setName(''); setSlug(''); setDescription('');
     setPrice(0); setStock(0); setImage(null);
     setEditingId(null);
-    const fileInput = document.getElementById('image') as HTMLInputElement;
-    if (fileInput) fileInput.value = ''; // Reset input file
+    (document.getElementById('image') as HTMLInputElement).value = ''; // Reset input file
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -64,8 +63,7 @@ const AdminProductsPage: NextPage = () => {
   };
 
   const handleEdit = (product: IProduct) => {
-    if (!product._id) return;
-    setEditingId(product._id.toString());
+    setEditingId(product._id!.toString());
     setName(product.name);
     setSlug(product.slug);
     setDescription(product.description);
